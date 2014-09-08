@@ -1,0 +1,66 @@
+<html>
+    <head>
+        <title>My first Three.js app</title>
+        <style>
+            canvas { width: 100%; height: 100% }
+            body {margin: 0;}
+        </style>
+    </head>
+    <body>
+        <!--<script src="js/three.min.js"></script>-->
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.min.js"></script>
+        <script>
+            // Set up scene
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+            var renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            document.body.appendChild( renderer.domElement );
+
+            // Set up objects
+            var n = 100;
+            var x = [];
+            var y = [];
+            var z = [];
+
+            for(i=-n; i<n; ++i){
+                x.push(i);
+                y.push(2*Math.sin(0.5*i));
+                z.push(i);
+            }
+
+            var geometry = new THREE.SphereGeometry(0.5,16,16);
+            var material = new THREE.MeshBasicMaterial( { color: 0xdddddd } );
+            
+            for(i=0; i<x.length; ++i) {
+                var sphere = new THREE.Mesh( geometry, material );
+                sphere.position.x = x[i];
+                sphere.position.y = y[i];
+                sphere.position.z = z[i];
+                
+                scene.add( sphere );
+            }
+
+            // Set up light
+            //var light = new THREE.DirectionalLight(0xffffff, 1);
+            //light.position.set(0,0,5);
+            //scene.add(light);
+
+            // Set up camera
+            //camera.position.x = 100;
+            //camera.position.y = 100;
+            camera.position.z = 100;
+            camera.lookAt(scene.position)
+
+            // Set up renderer
+            //renderer.render(scene, camera)
+            
+            function render() {
+                requestAnimationFrame(render);
+
+                renderer.render(scene, camera);
+            }
+            render();
+        </script>
+    </body>
+</html>
