@@ -7,15 +7,41 @@
         </style>
     </head>
     <body>
+        <div id="container"></div>
         <!--<script src="js/three.min.js"></script>-->
         <script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.min.js"></script>
         <script>
             // Set up scene
             var scene = new THREE.Scene();
-            var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-            var renderer = new THREE.WebGLRenderer();
+            
+            // Set up renderer
+            renderer = new THREE.WebGLRenderer( { antialias: true } );
             renderer.setSize( window.innerWidth, window.innerHeight );
-            document.body.appendChild( renderer.domElement );
+            container.appendChild( renderer.domElement );
+
+            // Set up views
+            var head = [5,0,90];
+            var views = [
+                {
+                    left: 0,
+                    bottom: 0,
+                    width: 0.5,
+                    //width: 1,
+                    height: 1.0,
+                    eye: [head[0]-0.05,head[1],head[2]],
+                    up: [0,1,0],
+                    fov: 75
+                }
+                ,{
+                    left: 0.5,
+                    bottom: 0,
+                    width: 0.5,
+                    height: 1.0,
+                    eye: [head[0]+0.05,head[1],head[2]],
+                    up: [0,1,0],
+                    fov: 75
+                }
+            ]
 
             // Set up objects
             var n = 100;
@@ -24,9 +50,9 @@
             var z = [];
 
             for(i=-n; i<n; ++i){
-                x.push(i);
-                y.push(2*Math.sin(0.5*i));
-                z.push(i);
+                x.push(0.5*i);
+                y.push(2*Math.sin(0.5*0.5*i));
+                z.push(0.5*i*i);
             }
 
             var geometry = new THREE.SphereGeometry(0.5,16,16);
@@ -41,19 +67,49 @@
                 scene.add( sphere );
             }
 
-            // Set up camera
-            //camera.position.x = 100;
-            //camera.position.y = 100;
-            camera.position.z = 100;
-            camera.lookAt(scene.position)
-
-            // Render loop            
-            function render() {
-                requestAnimationFrame(render);
-
-                renderer.render(scene, camera);
+            // Set up cameras
+            for (var ii =  0; ii < views.length; ++ii ) {
+                var view = views[ii];
+                camera = new THREE.PerspectiveCamera( view.fov, window.innerWidth / window.innerHeight, 1, 10000 );
+                camera.position.x = view.eye[ 0 ];
+                camera.position.y = view.eye[ 1 ];
+                camera.position.z = view.eye[ 2 ];
+                //camera.up.x = view.up[ 0 ];
+                //camera.up.y = view.up[ 1 ];
+                //camera.up.z = view.up[ 2 ];
+                view.camera = camera;
             }
-            render();
+
+            // Render instance
+            function render() {
+                for(var ii=0; ii<views.length; ++ii){
+                    view = views[ii];
+                    camera = view.camera;
+
+                    var left   = Math.floor( window.innerWidth  * view.left );
+                    var bottom = Math.floor( window.innerHeight * view.bottom );
+                    var width  = Math.floor( window.innerWidth  * view.width );
+                    var height = Math.floor( window.innerHeight * view.height );
+                    renderer.setViewport( left, bottom, width, height );
+                    renderer.setScissor( left, bottom, width, height );
+                    renderer.enableScissorTest ( true );
+                    //renderer.setClearColor( view.background );
+
+                    camera.lookAt(scene.position);
+                    camera.aspect = width / height;
+                    camera.updateProjectionMatrix();
+
+                    renderer.render( scene, camera );
+                }
+            }
+            
+            // Render loop
+            function animate() {
+                render();
+
+                requestAnimationFrame(animate);
+            }
+            animate();
         </script>
     </body>
 </html>
