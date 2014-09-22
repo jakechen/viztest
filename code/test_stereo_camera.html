@@ -47,9 +47,9 @@
             var head = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 1, 10000);
             head.position.x = 0;
             head.position.y = 0;
-            head.position.z = 5;
+            head.position.z = 7.5;
             
-            var eye_dist = 2; // 0.5 is a safe value
+            var eye_dist = 0.5; // 0.5 is a safe value
             
             var views = [
                 {
@@ -115,9 +115,17 @@
                 y = head.rotation.y
                 z = head.rotation.z
                 vectors =
+                  /*
                   [[Math.cos(y)*Math.cos(z), -Math.cos(y)*Math.sin(z), Math.sin(y)],
                   [Math.cos(x)*Math.sin(z)+Math.cos(z)*Math.sin(x)*Math.sin(y), Math.cos(x)*Math.cos(z)-Math.sin(x)*Math.sin(y)*Math.sin(z), -Math.cos(y)*Math.sin(x)],
                   [Math.sin(x)*Math.sin(z)-Math.cos(x)*Math.cos(z)*Math.sin(y), Math.cos(z)*Math.sin(x)+Math.cos(x)*Math.sin(y)*Math.sin(z), Math.cos(x)*Math.cos(y)]]
+                  */
+                
+                  
+                  [[Math.cos(y)*Math.cos(z), Math.cos(x)*Math.sin(z)+Math.cos(z)*Math.sin(x)*Math.sin(y), Math.sin(x)*Math.sin(z)-Math.cos(x)*Math.cos(z)*Math.sin(y)],
+                  [-Math.cos(y)*Math.sin(z), Math.cos(x)*Math.cos(z)-Math.sin(x)*Math.sin(y)*Math.sin(z), Math.cos(z)*Math.sin(x)+Math.cos(x)*Math.sin(y)*Math.sin(z)],
+                  [Math.sin(y), -Math.cos(y)*Math.sin(x), Math.cos(x)*Math.cos(y)]]
+                  
                 
                 views[0].camera.position.x = head.position.x - eye_dist/2 * vectors[0][0];
                 views[0].camera.position.y = head.position.y - eye_dist/2 * vectors[0][1];
