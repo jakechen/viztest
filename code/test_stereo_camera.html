@@ -1,0 +1,139 @@
+<html>
+    <head>
+        <title>My first Three.js app</title>
+        <style>
+            canvas { width: 100%; height: 100% }
+            body {margin: 0;}
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+        <!--<script src="js/three.min.js"></script>-->
+        <script src="threejs/r68/build/three.min.js"></script>
+        <script src="threejs/r68/examples/js/controls/OrbitControls.js"></script>
+        <script>
+            container = document.getElementById('container');
+            
+            //init();
+            //animate();
+            
+            // Set up scene
+            var scene = new THREE.Scene();
+            
+            // Set up renderer
+            var renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            container.appendChild( renderer.domElement );
+            
+            // Set up objects
+            var geometry = new THREE.BoxGeometry(1,1,1);
+            var material = new THREE.MeshLambertMaterial( { color: 0xdddddd } );
+            var cube = new THREE.Mesh( geometry, material );
+            cube.position.x = -2;
+            scene.add( cube );
+
+            var geometry = new THREE.SphereGeometry(1,32,32);
+            var material = new THREE.MeshLambertMaterial( { color: 0xdddddd } );
+            var sphere = new THREE.Mesh( geometry, material );
+            sphere.position.x = 2;
+            scene.add( sphere );
+
+            // Set up light
+            var light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(0,0,5);
+            scene.add(light);
+            
+            // Set up views and related cameras
+            var head = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 1, 10000);
+            head.position.x = 0;
+            head.position.y = 0;
+            head.position.z = 5;
+            
+            var eye_dist = 2; // 0.5 is a safe value
+            
+            var views = [
+                {
+                    left: 0,
+                    bottom: 0,
+                    width: 0.5,
+                    height: 1.0,
+                    fov: 75
+                },
+                {
+                    left: 0.5,
+                    bottom: 0,
+                    width: 0.5,
+                    height: 1.0,
+                    fov: 75
+                }
+            ]
+
+            for (var ii =  0; ii < views.length; ++ii ) {
+                var view = views[ii];
+                camera = head.clone();
+                view.camera = camera;
+            }
+            
+            // Animation
+            function turnCube() {
+                cube.rotation.x += 0.01;
+                cube.rotation.y += 0.01;
+            }
+            
+            // Set up controls
+            controls = new THREE.OrbitControls(head, renderer.domElement);
+            
+            // Render frame
+            function render() {
+                for(var ii=0; ii<views.length; ++ii){
+                    view = views[ii];
+                    camera = view.camera;
+
+                    var left   = Math.floor( window.innerWidth  * view.left );
+                    var bottom = Math.floor( window.innerHeight * view.bottom );
+                    var width  = Math.floor( window.innerWidth  * view.width );
+                    var height = Math.floor( window.innerHeight * view.height );
+                    renderer.setViewport( left, bottom, width, height );
+                    renderer.setScissor( left, bottom, width, height );
+                    renderer.enableScissorTest ( true );
+
+                    camera.lookAt(scene.position);
+                    camera.aspect = width / height;
+                    camera.updateProjectionMatrix();
+
+                    renderer.render( scene, camera );
+                }
+            }
+            render();
+
+            // Render loop
+            function animate() {
+                controls.update();
+                
+                distance = Math.sqrt(head.position.x^2 + head.position.y^2 + head.position.z^2)
+                x = head.rotation.x
+                y = head.rotation.y
+                z = head.rotation.z
+                vectors =
+                  [[Math.cos(y)*Math.cos(z), -Math.cos(y)*Math.sin(z), Math.sin(y)],
+                  [Math.cos(x)*Math.sin(z)+Math.cos(z)*Math.sin(x)*Math.sin(y), Math.cos(x)*Math.cos(z)-Math.sin(x)*Math.sin(y)*Math.sin(z), -Math.cos(y)*Math.sin(x)],
+                  [Math.sin(x)*Math.sin(z)-Math.cos(x)*Math.cos(z)*Math.sin(y), Math.cos(z)*Math.sin(x)+Math.cos(x)*Math.sin(y)*Math.sin(z), Math.cos(x)*Math.cos(y)]]
+                
+                views[0].camera.position.x = head.position.x - eye_dist/2 * vectors[0][0];
+                views[0].camera.position.y = head.position.y - eye_dist/2 * vectors[0][1];
+                views[0].camera.position.z = head.position.z - eye_dist/2 * vectors[0][2];
+                views[1].camera.position.x = head.position.x + eye_dist/2 * vectors[0][0];
+                views[1].camera.position.y = head.position.y + eye_dist/2 * vectors[0][1];
+                views[1].camera.position.z = head.position.z + eye_dist/2 * vectors[0][2];
+
+                turnCube();
+
+                render();
+                requestAnimationFrame(animate);
+            }
+
+            // Go!
+            animate();
+        </script>
+    </body>
+</html>

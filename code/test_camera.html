@@ -8,7 +8,8 @@
     </head>
     <body>
         <!--<script src="js/three.min.js"></script>-->
-        <script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/r68/three.min.js"></script>
+        <script src="threejs/r68/build/three.min.js"></script>
+        <script src="threejs/r68/examples/js/controls/OrbitControls.js"></script>
         <script>
             // Set up scene
             var scene = new THREE.Scene();
@@ -43,7 +44,12 @@
 
             // Set up camera
             scene.add(camera);
+            camera.position.x = 5;
+            camera.position.y = 5;
             camera.position.z = 5;
+            
+            // Set up controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
             
             // Render frame
             function render() {
@@ -55,6 +61,7 @@
 
             // Render loop
             function animate() {
+                controls.update();
                 render();
                 requestAnimationFrame(animate);
             }
