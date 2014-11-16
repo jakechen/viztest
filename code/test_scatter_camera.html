@@ -26,17 +26,42 @@
             container.appendChild( renderer.domElement );
             
             // Set up objects
-            var geometry = new THREE.BoxGeometry(1,1,1);
-            var material = new THREE.MeshLambertMaterial( { color: 0xdddddd } );
-            var cube = new THREE.Mesh( geometry, material );
-            cube.position.x = -2;
-            scene.add( cube );
+            var n = 1000;
+            var x = [];
+            var y = [];
+            var z = [];
 
-            var geometry = new THREE.SphereGeometry(1,32,32);
-            var material = new THREE.MeshLambertMaterial( { color: 0xdddddd } );
-            var sphere = new THREE.Mesh( geometry, material );
-            sphere.position.x = 2;
-            scene.add( sphere );
+            for(i=-n; i<n; ++i){
+                x.push(0.5*i);
+                y.push(2*Math.sin(0.5*0.5*i));
+                z.push(0.5*i);
+            }
+
+            var geometry = new THREE.SphereGeometry(0.25,16,16);
+            var material = new THREE.MeshBasicMaterial( { color: 0xdddddd } );
+            
+            for(i=0; i<x.length; ++i) {
+                var sphere = new THREE.Mesh( geometry, material );
+                sphere.position.x = x[i];
+                sphere.position.y = y[i];
+                sphere.position.z = z[i];
+                
+                scene.add( sphere );
+            }
+
+            var material = new THREE.LineBasicMaterial({
+                color: 0xffffff
+            });
+
+            var geometry = new THREE.Geometry();
+            geometry.vertices.push(
+                new THREE.Vector3( -10, 0, 0 ),
+                new THREE.Vector3( 0, 10, 0 ),
+                new THREE.Vector3( 0, 0, 10 )
+            );
+
+            var line = new THREE.Line( geometry, material );
+            scene.add( line );
 
             // Set up light
             var light = new THREE.DirectionalLight(0xffffff, 1);
@@ -44,7 +69,7 @@
             scene.add(light);
             
             // Set up views and related cameras
-            var head = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 1, 10000);
+            var head = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 1, 10000);
             head.position.x = 0;
             head.position.y = 0;
             head.position.z = 10;
@@ -72,12 +97,6 @@
                 var view = views[ii];
                 camera = head.clone();
                 view.camera = camera;
-            }
-            
-            // Animation
-            function turnCube() {
-                cube.rotation.x += 0.01;
-                cube.rotation.y += 0.01;
             }
             
             // Set up controls
@@ -133,8 +152,6 @@
                 views[1].camera.position.x = head.position.x + eye_dist/2 * vectors[0][0];
                 views[1].camera.position.y = head.position.y + eye_dist/2 * vectors[0][1];
                 views[1].camera.position.z = head.position.z + eye_dist/2 * vectors[0][2];
-
-                turnCube();
 
                 render();
                 requestAnimationFrame(animate);
