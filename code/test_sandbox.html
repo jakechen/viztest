@@ -53,10 +53,6 @@
             var axesMajor = new THREE.Line();
             var axesMinor = new THREE.Line();
 
-            axesMajor.geometry = new THREE.Geometry();
-            axesMinor.geometry = new THREE.Geometry();
-            axesMajor.geometry.dynamic = true;
-            axesMinor.geometry.dynamic = true;
             axesMajor.material = new THREE.LineBasicMaterial({ color: 0x555555 });
             axesMinor.material = new THREE.LineBasicMaterial({ color: 0x222222 });
             axesMajor.type = THREE.LinePieces;
@@ -73,17 +69,17 @@
                 
                 var new_step = Math.pow(10, Math.floor(Math.log10(cam_dist))-1);
 
-                //console.log("new_step is: "+new_step);
                 return new_step;
             }
 
             function drawAxesPlane(new_step) {
+                //console.log("recalculating new axes");                
+                
                 axesMajor.geometry.vertices = [];
                 axesMinor.geometry.vertices = [];
 
                 var size = 500*new_step;
-                
-                console.log("recalculating new axes");
+
                 for( var i=-size; i<=size; i=i+new_step ){
                    if( i%( new_step*10 )==0 ){ // if i is a multiple of 10*steps then use major axis else use minor
                         axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x-size, scene.position.y, scene.position.z+i ));
