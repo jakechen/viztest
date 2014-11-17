@@ -19,6 +19,7 @@
             
             // Set up scene
             var scene = new THREE.Scene();
+            //scene.fog = new THREE.Fog(0x000000);
             
             // Set up renderer
             var renderer = new THREE.WebGLRenderer({ antialias: false });
@@ -78,7 +79,7 @@
                 axesMajor.geometry.vertices = [];
                 axesMinor.geometry.vertices = [];
 
-                var size = 500*new_step;
+                var size = 100*new_step;
 
                 for( var i=-size; i<=size; i=i+new_step ){
                    if( i%( new_step*10 )==0 ){ // if i is a multiple of 10*steps then use major axis else use minor
