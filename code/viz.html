@@ -119,9 +119,15 @@
                 z = m.slice(2*object_count, 3*object_count);;
 
                 var geometry = new THREE.SphereGeometry(0.5,8,8);
-                var material = new THREE.MeshBasicMaterial( { color: 0xdddddd } );
                 
                 for(i=0; i<x.length; ++i) {
+                    var color;
+                    var j = Math.random();
+                    if( j>0.66 ) color = 0x4444ff;
+                    else if( j<0.33 ) color = 0x44ff44;
+                    else color = 0xff4444;
+                    var material = new THREE.MeshBasicMaterial( { color: color } )
+                    
                     var sphere = new THREE.Mesh( geometry, material );
                     sphere.position.x = x[i];
                     sphere.position.y = y[i];
