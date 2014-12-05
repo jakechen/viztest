@@ -62,42 +62,46 @@
             scene.add( axesMajor );
             scene.add( axesMinor );
 
-            var current_step = 0;
-            var new_step = 0;
+            current_step = 0
 
-            function calculateAxesStep(){
-                var cam_dist = Math.sqrt(Math.pow(camera.position.x-scene.position.x,2)+Math.pow(camera.position.y-scene.position.y,2)+Math.pow(camera.position.z-scene.position.z,2))
-                
-                var new_step = Math.pow(10, Math.floor(Math.log10(cam_dist))-1);
+            function drawAxes(new_step) {
+                //console.log("recalculating new axes");
 
-                return new_step;
-            }
+                // Calculate new axes step
+                cam_dist = Math.sqrt(Math.pow(camera.position.x-scene.position.x,2)+Math.pow(camera.position.y-scene.position.y,2)+Math.pow(camera.position.z-scene.position.z,2))
+                new_step = Math.pow(10, Math.floor(Math.log10(cam_dist))-1);
 
-            function drawAxesPlane(new_step) {
-                //console.log("recalculating new axes");                
-                
-                axesMajor.geometry.vertices = [];
-                axesMinor.geometry.vertices = [];
+                // If new axes are needed then recalculate the vertices, redraw, and output the new axes steps
+                if( current_step!=new_step ) {
+                    console.log('New axes step detected. New step is: '+new_step)
+                    axesMajor.geometry.vertices = [];
+                    axesMinor.geometry.vertices = [];
 
-                var size = 100*new_step;
+                    var size = 100;
 
-                for( var i=-size; i<=size; i=i+new_step ){
-                   if( i%( new_step*10 )==0 ){ // if i is a multiple of 10*steps then use major axis else use minor
-                        axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x-size, scene.position.y, scene.position.z+i ));
-                        axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x+size, scene.position.y, scene.position.z+i ));
-                        axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x+i, scene.position.y, scene.position.z-size ));
-                        axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x+i, scene.position.y, scene.position.z+size ));
+                    for( var i=-size; i<=size; i=i+1 ){
+                        console.log('Drawing axis: '+i)
+                        var axis_max = size*new_step
+                        var axis_i = i*new_step
+                        if( i%10==0 ){ // if i is a multiple of 10*steps then use major axis else use minor
+                            axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x-axis_max, scene.position.y, scene.position.z+axis_i ));
+                            axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_max, scene.position.y, scene.position.z+axis_i ));
+                            axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_i, scene.position.y, scene.position.z-axis_max ));
+                            axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_i, scene.position.y, scene.position.z+axis_max ));
+                        }
+                        else{
+                            axesMinor.geometry.vertices.push(new THREE.Vector3( scene.position.x-axis_max, scene.position.y, scene.position.z+axis_i ));
+                            axesMinor.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_max, scene.position.y, scene.position.z+axis_i ));
+                            axesMinor.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_i, scene.position.y, scene.position.z-axis_max ));
+                            axesMinor.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_i, scene.position.y, scene.position.z+axis_max ));
+                        }
                     }
-                    else{
-                        axesMinor.geometry.vertices.push(new THREE.Vector3( scene.position.x-size, scene.position.y, scene.position.z+i ));
-                        axesMinor.geometry.vertices.push(new THREE.Vector3( scene.position.x+size, scene.position.y, scene.position.z+i ));
-                        axesMinor.geometry.vertices.push(new THREE.Vector3( scene.position.x+i, scene.position.y, scene.position.z-size ));
-                        axesMinor.geometry.vertices.push(new THREE.Vector3( scene.position.x+i, scene.position.y, scene.position.z+size ));
-                    }
+
+                    axesMajor.geometry.verticesNeedUpdate = true;
+                    axesMinor.geometry.verticesNeedUpdate = true;
+
+                    current_step = new_step;
                 }
-
-                axesMajor.geometry.verticesNeedUpdate = true;
-                axesMinor.geometry.verticesNeedUpdate = true;
             }
 
             // Animation
@@ -123,9 +127,7 @@
 
                 turnCube();
                 
-                new_step = calculateAxesStep();
-                if( current_step!=new_step ) { drawAxesPlane( new_step ) }
-                current_step = new_step;
+                drawAxes(current_step);
 
                 renderer.render( scene, camera );
                 requestAnimationFrame(animate);
