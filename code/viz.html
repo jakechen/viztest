@@ -32,14 +32,8 @@
                 var light = new THREE.DirectionalLight(0xffffff, 1);
                 light.position.set(0,0,5);
                 scene.add(light);
-                
-                /*// Set up views and related cameras
-                camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.01, 100000);
-                camera.position.x = 0;
-                camera.position.y = 7.5;
-                camera.position.z = 7.5;*/
 
-                // Set up views and related cameras
+                // Set up stereo views and related cameras
                 head = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 1, 100000);
                 head.position.x = 0;
                 head.position.y = 0;
@@ -70,7 +64,9 @@
                     view.camera = camera;
                 }
                 
-                // Axes
+                // Instantiate axes variables
+                current_step = 0;
+
                 axesMajor = new THREE.Line();
                 axesMinor = new THREE.Line();
 
@@ -87,9 +83,6 @@
                 controls = new THREE.OrbitControls( head );
                 //controls.damping = 0.2;
                 //controls.addEventListener( 'change', render );
-                
-                // Instantiate axes variable
-                current_step = 0;
 
                 // Log
                 console.log('Initialization complete')
@@ -109,18 +102,23 @@
                 sphere.position.x = 2;
                 scene.add( sphere );*/
 
-                var n = 100;
-                var x = [];
-                var y = [];
-                var z = [];
+                var object_count = 1000;
+                var n = object_count * 3;
+                m = [];
 
-                for(i=-n; i<n; ++i){
-                    x.push(0.5*i);
+                for(i=0; i<n; ++i){
+                    /*x.push(0.5*i);
                     y.push(2*Math.sin(0.5*0.5*i));
-                    z.push(0.5*i);
+                    z.push(0.5*i);*/
+                    if( Math.random()>0.5 ) m.push(Math.random()*100);
+                    else m.push(Math.random()*100*-1);
                 }
 
-                var geometry = new THREE.SphereGeometry(0.5,16,16);
+                x = m.slice(0, object_count);
+                y = m.slice(object_count, 2*object_count);
+                z = m.slice(2*object_count, 3*object_count);;
+
+                var geometry = new THREE.SphereGeometry(0.5,8,8);
                 var material = new THREE.MeshBasicMaterial( { color: 0xdddddd } );
                 
                 for(i=0; i<x.length; ++i) {
