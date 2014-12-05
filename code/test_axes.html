@@ -51,18 +51,26 @@
             camera.position.z = 7.5;
             
             // Axes
-            var axesMajor = new THREE.Line();
-            var axesMinor = new THREE.Line();
+            axesMajorL = new THREE.Line();
+            axesMinorL = new THREE.Line();
+            axesMajorS = new THREE.Line();
+            axesMinorS = new THREE.Line();
 
-            axesMajor.material = new THREE.LineBasicMaterial({ color: 0x555555 });
-            axesMinor.material = new THREE.LineBasicMaterial({ color: 0x222222 });
-            axesMajor.type = THREE.LinePieces;
-            axesMinor.type = THREE.LinePieces;
+            axesMajorL.material = new THREE.LineBasicMaterial({ color: 0x555555 });
+            axesMinorL.material = new THREE.LineBasicMaterial({ color: 0x222222 });
+            axesMajorL.type = THREE.LinePieces;
+            axesMinorL.type = THREE.LinePieces;
+            axesMajorS.material = new THREE.LineBasicMaterial({ color: 0x555555 });
+            axesMinorS.material = new THREE.LineBasicMaterial({ color: 0x222222 });
+            axesMajorS.type = THREE.LinePieces;
+            axesMinorS.type = THREE.LinePieces;
 
-            scene.add( axesMajor );
-            scene.add( axesMinor );
+            scene.add( axesMajorL );
+            scene.add( axesMinorL );
+            scene.add( axesMajorS );
+            scene.add( axesMinorS );
 
-            current_step = 0
+            current_step = 0;
 
             function drawAxes(new_step) {
                 //console.log("recalculating new axes");
@@ -73,14 +81,14 @@
 
                 // If new axes are needed then recalculate the vertices, redraw, and output the new axes steps
                 if( current_step!=new_step ) {
-                    console.log('New axes step detected. New step is: '+new_step)
+                    //console.log('New axes step detected. New step is: '+new_step)
                     axesMajor.geometry.vertices = [];
                     axesMinor.geometry.vertices = [];
 
                     var size = 100;
 
                     for( var i=-size; i<=size; i=i+1 ){
-                        console.log('Drawing axis: '+i)
+                        //console.log('Drawing axis: '+i)
                         var axis_max = size*new_step
                         var axis_i = i*new_step
                         if( i%10==0 ){ // if i is a multiple of 10*steps then use major axis else use minor
