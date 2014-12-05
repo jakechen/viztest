@@ -1,0 +1,214 @@
+<html>
+    <head>
+        <title>My first Three.js app</title>
+        <style>
+            canvas { width: 100%; height: 100% }
+            body {margin: 0;}
+        </style>
+    </head>
+    <body>
+        <div id="container"></div>
+        <!--<script src="js/three.min.js"></script>-->
+        <script src="threejs/r68/build/three.min.js"></script>
+        <script src="threejs/r68/examples/js/controls/OrbitControls.js"></script>
+        <script>
+            container = document.getElementById('container');
+
+            init();
+            objects();
+            render_loop();
+
+            function init(){
+                // Set up scene
+                scene = new THREE.Scene();
+                //scene.fog = new THREE.Fog(0x000000);
+                
+                // Set up renderer
+                renderer = new THREE.WebGLRenderer({ antialias: false });
+                renderer.setSize( window.innerWidth, window.innerHeight );
+                container.appendChild( renderer.domElement );            
+
+                // Set up light
+                var light = new THREE.DirectionalLight(0xffffff, 1);
+                light.position.set(0,0,5);
+                scene.add(light);
+                
+                /*// Set up views and related cameras
+                camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.01, 100000);
+                camera.position.x = 0;
+                camera.position.y = 7.5;
+                camera.position.z = 7.5;*/
+
+                // Set up views and related cameras
+                head = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 1, 10000);
+                head.position.x = 0;
+                head.position.y = 0;
+                head.position.z = 10;
+                
+                eye_dist = 0.5; // 0.5 is a safe value
+                
+                views = [
+                    {
+                        left: 0,
+                        bottom: 0,
+                        width: 0.5,
+                        height: 1.0,
+                        fov: 75
+                    },
+                    {
+                        left: 0.5,
+                        bottom: 0,
+                        width: 0.5,
+                        height: 1.0,
+                        fov: 75
+                    }
+                ]
+
+                for (var ii =  0; ii < views.length; ++ii ) {
+                    var view = views[ii];
+                    camera = head.clone();
+                    view.camera = camera;
+                }
+                
+                // Axes
+                axesMajor = new THREE.Line();
+                axesMinor = new THREE.Line();
+
+                axesMajor.material = new THREE.LineBasicMaterial({ color: 0x555555 });
+                axesMinor.material = new THREE.LineBasicMaterial({ color: 0x222222 });
+                axesMajor.type = THREE.LinePieces;
+                axesMinor.type = THREE.LinePieces;
+
+                scene.add( axesMajor );
+                scene.add( axesMinor );
+
+                // Set up controls
+                //controls = new THREE.OrbitControls(head, renderer.domElement);
+                controls = new THREE.OrbitControls( head );
+                //controls.damping = 0.2;
+                //controls.addEventListener( 'change', render );
+                
+                // Instantiate axes variable
+                current_step = 0;
+
+                // Log
+                console.log('Initialization complete')
+            }
+
+            function objects(){
+                // Set up objects
+                var geometry = new THREE.BoxGeometry(1,1,1);
+                var material = new THREE.MeshLambertMaterial( { color: 0xdddddd } );
+                cube = new THREE.Mesh( geometry, material );
+                cube.position.x = -2;
+                scene.add( cube );
+
+                var geometry = new THREE.SphereGeometry(1,32,32);
+                var material = new THREE.MeshLambertMaterial( { color: 0xdddddd } );
+                sphere = new THREE.Mesh( geometry, material );
+                sphere.position.x = 2;
+                scene.add( sphere );
+
+                // Log
+                console.log('Objects added')
+            }
+
+            function drawAxes(new_step) {
+                //console.log("recalculating new axes");
+
+                // Calculate new axes step
+                cam_dist = Math.sqrt(Math.pow(camera.position.x-scene.position.x,2)+Math.pow(camera.position.y-scene.position.y,2)+Math.pow(camera.position.z-scene.position.z,2))
+                new_step = Math.pow(10, Math.floor(Math.log10(cam_dist))-1);
+
+                // If new axes are needed then recalculate the vertices, redraw, and output the new axes steps
+                if( current_step!=new_step ) {
+                    axesMajor.geometry.vertices = [];
+                    axesMinor.geometry.vertices = [];
+
+                    var size = 100*new_step;
+
+                    for( var i=-size; i<=size; i=i+new_step ){
+                       if( i%( new_step*10 )==0 ){ // if i is a multiple of 10*steps then use major axis else use minor
+                            axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x-size, scene.position.y, scene.position.z+i ));
+                            axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x+size, scene.position.y, scene.position.z+i ));
+                            axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x+i, scene.position.y, scene.position.z-size ));
+                            axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x+i, scene.position.y, scene.position.z+size ));
+                        }
+                        else{
+                            axesMinor.geometry.vertices.push(new THREE.Vector3( scene.position.x-size, scene.position.y, scene.position.z+i ));
+                            axesMinor.geometry.vertices.push(new THREE.Vector3( scene.position.x+size, scene.position.y, scene.position.z+i ));
+                            axesMinor.geometry.vertices.push(new THREE.Vector3( scene.position.x+i, scene.position.y, scene.position.z-size ));
+                            axesMinor.geometry.vertices.push(new THREE.Vector3( scene.position.x+i, scene.position.y, scene.position.z+size ));
+                        }
+                    }
+
+                    axesMajor.geometry.verticesNeedUpdate = true;
+                    axesMinor.geometry.verticesNeedUpdate = true;
+
+                    current_step = new_step;
+                }
+            }
+
+            // Animation
+            function turnCube() {
+                cube.rotation.x += 0.01;
+                cube.rotation.y += 0.01;
+            }
+
+            // Render frame for each camera
+            function render() {
+                for(var ii=0; ii<views.length; ++ii){
+                    view = views[ii];
+                    camera = view.camera;
+
+                    var left   = Math.floor( window.innerWidth  * view.left );
+                    var bottom = Math.floor( window.innerHeight * view.bottom );
+                    var width  = Math.floor( window.innerWidth  * view.width );
+                    var height = Math.floor( window.innerHeight * view.height );
+                    renderer.setViewport( left, bottom, width, height );
+                    renderer.setScissor( left, bottom, width, height );
+                    renderer.enableScissorTest ( true );
+
+                    camera.lookAt(scene.position);
+                    camera.aspect = width / height;
+                    camera.updateProjectionMatrix();
+
+                    renderer.render( scene, camera );
+                }
+            }
+
+            // Render loop
+            function render_loop() {
+                controls.update();
+                
+                var distance = Math.sqrt(head.position.x^2 + head.position.y^2 + head.position.z^2)
+                var x = head.rotation.x
+                var y = head.rotation.y
+                var z = head.rotation.z
+                var vectors =
+                  [[Math.cos(y)*Math.cos(z), Math.cos(x)*Math.sin(z)+Math.cos(z)*Math.sin(x)*Math.sin(y), Math.sin(x)*Math.sin(z)-Math.cos(x)*Math.cos(z)*Math.sin(y)],
+                  [-Math.cos(y)*Math.sin(z), Math.cos(x)*Math.cos(z)-Math.sin(x)*Math.sin(y)*Math.sin(z), Math.cos(z)*Math.sin(x)+Math.cos(x)*Math.sin(y)*Math.sin(z)],
+                  [Math.sin(y), -Math.cos(y)*Math.sin(x), Math.cos(x)*Math.cos(y)]]
+                  /*
+                  [[Math.cos(y)*Math.cos(z), -Math.cos(y)*Math.sin(z), Math.sin(y)],
+                  [Math.cos(x)*Math.sin(z)+Math.cos(z)*Math.sin(x)*Math.sin(y), Math.cos(x)*Math.cos(z)-Math.sin(x)*Math.sin(y)*Math.sin(z), -Math.cos(y)*Math.sin(x)],
+                  [Math.sin(x)*Math.sin(z)-Math.cos(x)*Math.cos(z)*Math.sin(y), Math.cos(z)*Math.sin(x)+Math.cos(x)*Math.sin(y)*Math.sin(z), Math.cos(x)*Math.cos(y)]]
+                  */
+                
+                views[0].camera.position.x = head.position.x - eye_dist/2 * vectors[0][0];
+                views[0].camera.position.y = head.position.y - eye_dist/2 * vectors[0][1];
+                views[0].camera.position.z = head.position.z - eye_dist/2 * vectors[0][2];
+                views[1].camera.position.x = head.position.x + eye_dist/2 * vectors[0][0];
+                views[1].camera.position.y = head.position.y + eye_dist/2 * vectors[0][1];
+                views[1].camera.position.z = head.position.z + eye_dist/2 * vectors[0][2];
+
+                turnCube();
+                
+                drawAxes(current_step);
+
+                render();
+                requestAnimationFrame(render_loop);
+            }
+        </script>
+    </body>
+</html>
