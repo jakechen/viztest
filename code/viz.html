@@ -34,12 +34,12 @@
                 scene.add(light);
 
                 // Set up stereo views and related cameras
-                head = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 1, 100000);
+                head = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 1, 10000);
                 head.position.x = 0;
                 head.position.y = 0;
                 head.position.z = 10;
                 
-                eye_dist = 0.5; // 0.5 is a safe value
+                eye_dist = 0.3; // 0.5 is a safe value
                 
                 views = [
                     {

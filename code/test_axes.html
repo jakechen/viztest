@@ -24,6 +24,7 @@
             // Set up renderer
             var renderer = new THREE.WebGLRenderer({ antialias: false });
             renderer.setSize( window.innerWidth, window.innerHeight );
+            renderer.sortObjects = false;
             container.appendChild( renderer.domElement );            
             
             // Set up objects
@@ -56,20 +57,21 @@
             axesMajorS = new THREE.Line();
             axesMinorS = new THREE.Line();
 
-            axesMajorL.material = new THREE.LineBasicMaterial({ color: 0x555555 });
-            axesMinorL.material = new THREE.LineBasicMaterial({ color: 0x222222 });
+            axesMajorL.material = new THREE.LineBasicMaterial({ color: 0x555555, transparent: true });
+            axesMinorL.material = new THREE.LineBasicMaterial({ color: 0x333333, transparent: true });
             axesMajorL.type = THREE.LinePieces;
             axesMinorL.type = THREE.LinePieces;
-            axesMajorS.material = new THREE.LineBasicMaterial({ color: 0x555555 });
-            axesMinorS.material = new THREE.LineBasicMaterial({ color: 0x222222 });
+            axesMajorS.material = new THREE.LineBasicMaterial({ color: 0x555555, transparent: true });
+            axesMinorS.material = new THREE.LineBasicMaterial({ color: 0x333333, transparent: true });
             axesMajorS.type = THREE.LinePieces;
             axesMinorS.type = THREE.LinePieces;
 
+            
             scene.add( axesMajorL );
             scene.add( axesMinorL );
             scene.add( axesMajorS );
             scene.add( axesMinorS );
-
+            
             current_step = 0;
 
             function drawAxes(new_step) {
@@ -82,34 +84,63 @@
                 // If new axes are needed then recalculate the vertices, redraw, and output the new axes steps
                 if( current_step!=new_step ) {
                     //console.log('New axes step detected. New step is: '+new_step)
-                    axesMajor.geometry.vertices = [];
-                    axesMinor.geometry.vertices = [];
+                    axesMajorL.geometry.vertices = [];
+                    axesMinorL.geometry.vertices = [];
+                    axesMajorS.geometry.vertices = [];
+                    axesMinorS.geometry.vertices = [];
 
-                    var size = 100;
+                    var sizeL = 200;
+                    var sizeS = 200;
 
-                    for( var i=-size; i<=size; i=i+1 ){
+                    for( var i=-sizeL; i<=sizeL; i=i+1 ){
                         //console.log('Drawing axis: '+i)
-                        var axis_max = size*new_step
-                        var axis_i = i*new_step
+                        var axis_max = 10*sizeL*new_step
+                        var axis_i = 10*i*new_step
                         if( i%10==0 ){ // if i is a multiple of 10*steps then use major axis else use minor
-                            axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x-axis_max, scene.position.y, scene.position.z+axis_i ));
-                            axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_max, scene.position.y, scene.position.z+axis_i ));
-                            axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_i, scene.position.y, scene.position.z-axis_max ));
-                            axesMajor.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_i, scene.position.y, scene.position.z+axis_max ));
+                            axesMajorL.geometry.vertices.push(new THREE.Vector3( scene.position.x-axis_max, scene.position.y, scene.position.z+axis_i ));
+                            axesMajorL.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_max, scene.position.y, scene.position.z+axis_i ));
+                            axesMajorL.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_i, scene.position.y, scene.position.z-axis_max ));
+                            axesMajorL.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_i, scene.position.y, scene.position.z+axis_max ));
                         }
                         else{
-                            axesMinor.geometry.vertices.push(new THREE.Vector3( scene.position.x-axis_max, scene.position.y, scene.position.z+axis_i ));
-                            axesMinor.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_max, scene.position.y, scene.position.z+axis_i ));
-                            axesMinor.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_i, scene.position.y, scene.position.z-axis_max ));
-                            axesMinor.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_i, scene.position.y, scene.position.z+axis_max ));
+                            axesMinorL.geometry.vertices.push(new THREE.Vector3( scene.position.x-axis_max, scene.position.y, scene.position.z+axis_i ));
+                            axesMinorL.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_max, scene.position.y, scene.position.z+axis_i ));
+                            axesMinorL.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_i, scene.position.y, scene.position.z-axis_max ));
+                            axesMinorL.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_i, scene.position.y, scene.position.z+axis_max ));
                         }
                     }
 
-                    axesMajor.geometry.verticesNeedUpdate = true;
-                    axesMinor.geometry.verticesNeedUpdate = true;
+                    axesMajorL.geometry.verticesNeedUpdate = true;
+                    axesMinorL.geometry.verticesNeedUpdate = true;
+
+                    for( var i=-sizeS; i<=sizeS; i=i+1 ){
+                        //console.log('Drawing axis: '+i)
+                        var axis_max = sizeS*new_step
+                        var axis_i = i*new_step
+                        if( i%10==0 ){ // if i is a multiple of 10*steps then use major axis else use minor
+                            axesMajorS.geometry.vertices.push(new THREE.Vector3( scene.position.x-axis_max, scene.position.y, scene.position.z+axis_i ));
+                            axesMajorS.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_max, scene.position.y, scene.position.z+axis_i ));
+                            axesMajorS.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_i, scene.position.y, scene.position.z-axis_max ));
+                            axesMajorS.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_i, scene.position.y, scene.position.z+axis_max ));
+                        }
+                        else{
+                            axesMinorS.geometry.vertices.push(new THREE.Vector3( scene.position.x-axis_max, scene.position.y, scene.position.z+axis_i ));
+                            axesMinorS.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_max, scene.position.y, scene.position.z+axis_i ));
+                            axesMinorS.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_i, scene.position.y, scene.position.z-axis_max ));
+                            axesMinorS.geometry.vertices.push(new THREE.Vector3( scene.position.x+axis_i, scene.position.y, scene.position.z+axis_max ));
+                        }
+                    }
+
+                    axesMajorS.geometry.verticesNeedUpdate = true;
+                    axesMinorS.geometry.verticesNeedUpdate = true;
 
                     current_step = new_step;
                 }
+
+                axesMajorL.material.opacity = ( Math.log10(cam_dist)-Math.log10(10*current_step) );
+                axesMinorL.material.opacity = ( Math.log10(cam_dist)-Math.log10(10*current_step) );
+                axesMajorS.material.opacity = 1-( Math.log10(cam_dist)-Math.log10(10*current_step) );
+                axesMinorS.material.opacity = 1-( Math.log10(cam_dist)-Math.log10(10*current_step) );
             }
 
             // Animation
