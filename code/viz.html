@@ -32,9 +32,14 @@
                 }
 
                 var geometry = new THREE.SphereGeometry(0.1,8,8);
-                var material = new THREE.MeshBasicMaterial( { color: 0x999999 } );
                 
                 for(i=0; i<x.length; ++i) {
+                    if( data[i]['species'] == 'setosa' ) { color = 0x4444ff; }
+                    else if( data[i]['species'] == 'versicolor' ) { color = 0x44ff44; }
+                    else color = 0xff4444;
+
+                    var material = new THREE.MeshBasicMaterial( { color: color } );
+
                     var sphere = new THREE.Mesh( geometry, material );
                     sphere.position.x = x[i];
                     sphere.position.y = y[i];
