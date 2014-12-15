@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>My first Three.js app</title>
+        <title>Viztest</title>
         <style>
             canvas { width: 100%; height: 100% }
             body {margin: 0;}
@@ -9,6 +9,7 @@
     <body>
         <div id="container"></div>
         <!--<script src="js/three.min.js"></script>-->
+        <script src="../data/iris.json"></script>
         <script src="threejs/r68/build/three.min.js"></script>
         <script src="threejs/r68/examples/js/controls/OrbitControls.js"></script>
         <script>
@@ -16,7 +17,87 @@
 
             init();
             objects();
+            //objectsDemo();
             render_loop();
+
+            function objects(){
+                var x = [];
+                var y = [];
+                var z = [];
+                
+                for(i=0; i<data.length; ++i){
+                    x.push(data[i]['sepalLength']);
+                    y.push(data[i]['sepalWidth']);
+                    z.push(data[i]['petalLength']);
+                }
+
+                var geometry = new THREE.SphereGeometry(0.1,8,8);
+                var material = new THREE.MeshBasicMaterial( { color: 0x999999 } );
+                
+                for(i=0; i<x.length; ++i) {
+                    var sphere = new THREE.Mesh( geometry, material );
+                    sphere.position.x = x[i];
+                    sphere.position.y = y[i];
+                    sphere.position.z = z[i];
+                    
+                    scene.add( sphere );
+                }
+
+                // Log
+                console.log('Objects added')
+            }
+
+            function objectsDemo(){
+                /*// Set up objects
+                var geometry = new THREE.BoxGeometry(1,1,1);
+                var material = new THREE.MeshLambertMaterial( { color: 0xdddddd } );
+                cube = new THREE.Mesh( geometry, material );
+                cube.position.x = -2;
+                scene.add( cube );
+
+                var geometry = new THREE.SphereGeometry(1,32,32);
+                var material = new THREE.MeshLambertMaterial( { color: 0xdddddd } );
+                sphere = new THREE.Mesh( geometry, material );
+                sphere.position.x = 2;
+                scene.add( sphere );*/
+
+                var object_count = 1000;
+                var n = object_count * 3;
+                m = [];
+
+                for(i=0; i<n; ++i){
+                    /*x.push(0.5*i);
+                    y.push(2*Math.sin(0.5*0.5*i));
+                    z.push(0.5*i);*/
+                    if( Math.random()>0.5 ) m.push(Math.random()*100);
+                    else m.push(Math.random()*100*-1);
+                }
+
+                x = m.slice(0, object_count);
+                y = m.slice(object_count, 2*object_count);
+                z = m.slice(2*object_count, 3*object_count);;
+
+                var geometry = new THREE.SphereGeometry(0.5,8,8);
+                
+                for(i=0; i<x.length; ++i) {
+                    var color;
+                    var j = Math.random();
+                    if( j>0.66 ) color = 0x4444ff;
+                    else if( j<0.33 ) color = 0x44ff44;
+                    else color = 0xff4444;
+                    var material = new THREE.MeshBasicMaterial( { color: color } )
+                    
+                    var sphere = new THREE.Mesh( geometry, material );
+                    sphere.position.x = x[i];
+                    sphere.position.y = y[i];
+                    sphere.position.z = z[i];
+                    
+                    scene.add( sphere );
+                }
+
+                // Log
+                console.log('Objects added')
+            }
 
             function init(){
                 // Set up scene
@@ -34,7 +115,7 @@
                 scene.add(light);
 
                 // Set up stereo views and related cameras
-                head = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 1, 10000);
+                head = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 1, 100000);
                 head.position.x = 0;
                 head.position.y = 0;
                 head.position.z = 10;
@@ -88,58 +169,6 @@
                 console.log('Initialization complete')
             }
 
-            function objects(){
-                /*// Set up objects
-                var geometry = new THREE.BoxGeometry(1,1,1);
-                var material = new THREE.MeshLambertMaterial( { color: 0xdddddd } );
-                cube = new THREE.Mesh( geometry, material );
-                cube.position.x = -2;
-                scene.add( cube );
-
-                var geometry = new THREE.SphereGeometry(1,32,32);
-                var material = new THREE.MeshLambertMaterial( { color: 0xdddddd } );
-                sphere = new THREE.Mesh( geometry, material );
-                sphere.position.x = 2;
-                scene.add( sphere );*/
-
-                var object_count = 1000;
-                var n = object_count * 3;
-                m = [];
-
-                for(i=0; i<n; ++i){
-                    /*x.push(0.5*i);
-                    y.push(2*Math.sin(0.5*0.5*i));
-                    z.push(0.5*i);*/
-                    if( Math.random()>0.5 ) m.push(Math.random()*100);
-                    else m.push(Math.random()*100*-1);
-                }
-
-                x = m.slice(0, object_count);
-                y = m.slice(object_count, 2*object_count);
-                z = m.slice(2*object_count, 3*object_count);;
-
-                var geometry = new THREE.SphereGeometry(0.5,8,8);
-                
-                for(i=0; i<x.length; ++i) {
-                    var color;
-                    var j = Math.random();
-                    if( j>0.66 ) color = 0x4444ff;
-                    else if( j<0.33 ) color = 0x44ff44;
-                    else color = 0xff4444;
-                    var material = new THREE.MeshBasicMaterial( { color: color } )
-                    
-                    var sphere = new THREE.Mesh( geometry, material );
-                    sphere.position.x = x[i];
-                    sphere.position.y = y[i];
-                    sphere.position.z = z[i];
-                    
-                    scene.add( sphere );
-                }
-
-                // Log
-                console.log('Objects added')
-            }
-
             function drawAxes(new_step) {
                 //console.log("recalculating new axes");
 
@@ -153,7 +182,7 @@
                     axesMajor.geometry.vertices = [];
                     axesMinor.geometry.vertices = [];
 
-                    var size = 100;
+                    var size = 1000;
 
                     for( var i=-size; i<=size; i=i+1 ){
                         //console.log('Drawing axis: '+i)
