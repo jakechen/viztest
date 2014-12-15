@@ -107,6 +107,7 @@
             function init(){
                 // Set up scene
                 scene = new THREE.Scene();
+                origin = scene.position.clone();
                 //scene.fog = new THREE.Fog(0x000000);
                 
                 // Set up renderer
@@ -132,22 +133,19 @@
                         left: 0,
                         bottom: 0,
                         width: 0.5,
-                        height: 1.0,
-                        fov: 75
+                        height: 1.0
                     },
                     {
                         left: 0.5,
                         bottom: 0,
                         width: 0.5,
-                        height: 1.0,
-                        fov: 75
+                        height: 1.0
                     }
                 ]
 
-                for (var ii =  0; ii < views.length; ++ii ) {
-                    var view = views[ii];
-                    camera = head.clone();
-                    view.camera = camera;
+                for( var i=0; i<views.length; ++i ) {
+                    var view = views[i];
+                    view.camera = head.clone();
                 }
                 
                 // Instantiate axes variables
@@ -165,8 +163,7 @@
                 scene.add( axesMinor );
 
                 // Set up controls
-                //controls = new THREE.OrbitControls(head, renderer.domElement);
-                controls = new THREE.OrbitControls( head );
+                controls = new THREE.OrbitControls(head, renderer.domElement);
                 //controls.damping = 0.2;
                 //controls.addEventListener( 'change', render );
 
@@ -178,8 +175,8 @@
                 //console.log("recalculating new axes");
 
                 // Calculate new axes step
-                cam_dist = Math.sqrt(Math.pow(camera.position.x-scene.position.x,2)+Math.pow(camera.position.y-scene.position.y,2)+Math.pow(camera.position.z-scene.position.z,2))
-                new_step = Math.pow(10, Math.floor(Math.log10(cam_dist))-1);
+                cam_dist = Math.sqrt(Math.pow(head.position.x-scene.position.x,2)+Math.pow(head.position.y-scene.position.y,2)+Math.pow(head.position.z-scene.position.z,2))
+                var new_step = Math.pow(10, Math.floor(Math.log10(cam_dist))-1);
 
                 // If new axes are needed then recalculate the vertices, redraw, and output the new axes steps
                 if( current_step!=new_step ) {
@@ -189,7 +186,7 @@
 
                     var size = 1000;
 
-                    for( var i=-size; i<=size; i=i+1 ){
+                    for( var i=-size; i<=size; ++i ){
                         //console.log('Drawing axis: '+i)
                         var axis_max = size*new_step
                         var axis_i = i*new_step
@@ -220,11 +217,35 @@
                 cube.rotation.y += 0.01;
             }
 
-            // Render frame for each camera
-            function render() {
-                for(var ii=0; ii<views.length; ++ii){
-                    view = views[ii];
-                    camera = view.camera;
+            // Render frames for each eye/view/camera
+            function stereo_render() {
+                var x = head.rotation.x
+                var y = head.rotation.y
+                var z = head.rotation.z
+                
+                var vectors =
+                    [[Math.cos(y)*Math.cos(z), Math.cos(x)*Math.sin(z)+Math.cos(z)*Math.sin(x)*Math.sin(y), Math.sin(x)*Math.sin(z)-Math.cos(x)*Math.cos(z)*Math.sin(y)],
+                    [-Math.cos(y)*Math.sin(z), Math.cos(x)*Math.cos(z)-Math.sin(x)*Math.sin(y)*Math.sin(z), Math.cos(z)*Math.sin(x)+Math.cos(x)*Math.sin(y)*Math.sin(z)],
+                    [Math.sin(y), -Math.cos(y)*Math.sin(x), Math.cos(x)*Math.cos(y)]]
+                    /*
+                    [[Math.cos(y)*Math.cos(z), -Math.cos(y)*Math.sin(z), Math.sin(y)],
+                    [Math.cos(x)*Math.sin(z)+Math.cos(z)*Math.sin(x)*Math.sin(y), Math.cos(x)*Math.cos(z)-Math.sin(x)*Math.sin(y)*Math.sin(z), -Math.cos(y)*Math.sin(x)],
+                    [Math.sin(x)*Math.sin(z)-Math.cos(x)*Math.cos(z)*Math.sin(y), Math.cos(z)*Math.sin(x)+Math.cos(x)*Math.sin(y)*Math.sin(z), Math.cos(x)*Math.cos(y)]]
+                    */
+                
+                views[0].camera.position.x = head.position.x - eye_dist/2 * vectors[0][0];
+                views[0].camera.position.y = head.position.y - eye_dist/2 * vectors[0][1];
+                views[0].camera.position.z = head.position.z - eye_dist/2 * vectors[0][2];
+                views[0].camera.lookAt(controls.target);
+
+                views[1].camera.position.x = head.position.x + eye_dist/2 * vectors[0][0];
+                views[1].camera.position.y = head.position.y + eye_dist/2 * vectors[0][1];
+                views[1].camera.position.z = head.position.z + eye_dist/2 * vectors[0][2];
+                views[1].camera.lookAt(controls.target);
+
+                for( var i=0; i<views.length; ++i ){
+                    var view = views[i];
+                    var camera = view.camera;
 
                     var left   = Math.floor( window.innerWidth  * view.left );
                     var bottom = Math.floor( window.innerHeight * view.bottom );
@@ -233,10 +254,9 @@
                     renderer.setViewport( left, bottom, width, height );
                     renderer.setScissor( left, bottom, width, height );
                     renderer.enableScissorTest ( true );
-
-                    camera.lookAt(scene.position);
-                    camera.aspect = width / height;
-                    camera.updateProjectionMatrix();
+                    
+                    //camera.aspect = width / height;
+                    //camera.updateProjectionMatrix();
 
                     renderer.render( scene, camera );
                 }
@@ -245,33 +265,14 @@
             // Render loop
             function render_loop() {
                 controls.update();
-                
-                var distance = Math.sqrt(head.position.x^2 + head.position.y^2 + head.position.z^2)
-                var x = head.rotation.x
-                var y = head.rotation.y
-                var z = head.rotation.z
-                var vectors =
-                  [[Math.cos(y)*Math.cos(z), Math.cos(x)*Math.sin(z)+Math.cos(z)*Math.sin(x)*Math.sin(y), Math.sin(x)*Math.sin(z)-Math.cos(x)*Math.cos(z)*Math.sin(y)],
-                  [-Math.cos(y)*Math.sin(z), Math.cos(x)*Math.cos(z)-Math.sin(x)*Math.sin(y)*Math.sin(z), Math.cos(z)*Math.sin(x)+Math.cos(x)*Math.sin(y)*Math.sin(z)],
-                  [Math.sin(y), -Math.cos(y)*Math.sin(x), Math.cos(x)*Math.cos(y)]]
-                  /*
-                  [[Math.cos(y)*Math.cos(z), -Math.cos(y)*Math.sin(z), Math.sin(y)],
-                  [Math.cos(x)*Math.sin(z)+Math.cos(z)*Math.sin(x)*Math.sin(y), Math.cos(x)*Math.cos(z)-Math.sin(x)*Math.sin(y)*Math.sin(z), -Math.cos(y)*Math.sin(x)],
-                  [Math.sin(x)*Math.sin(z)-Math.cos(x)*Math.cos(z)*Math.sin(y), Math.cos(z)*Math.sin(x)+Math.cos(x)*Math.sin(y)*Math.sin(z), Math.cos(x)*Math.cos(y)]]
-                  */
-                
-                views[0].camera.position.x = head.position.x - eye_dist/2 * vectors[0][0];
-                views[0].camera.position.y = head.position.y - eye_dist/2 * vectors[0][1];
-                views[0].camera.position.z = head.position.z - eye_dist/2 * vectors[0][2];
-                views[1].camera.position.x = head.position.x + eye_dist/2 * vectors[0][0];
-                views[1].camera.position.y = head.position.y + eye_dist/2 * vectors[0][1];
-                views[1].camera.position.z = head.position.z + eye_dist/2 * vectors[0][2];
 
                 //turnCube();
                 
                 drawAxes(current_step);
 
-                render();
+                stereo_render();
+                //renderer.render( scene, head ); // test head view
+                
                 requestAnimationFrame(render_loop);
             }
         </script>
